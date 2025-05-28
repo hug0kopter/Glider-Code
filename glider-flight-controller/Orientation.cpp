@@ -1,9 +1,8 @@
-// Orientation.cpp
-
 #include "Orientation.h"
 #include "KalmanOrientation.h"
+#include "Pins.h"
 
-#define ORIENTATION_DISABLED true  // ✅ Set to true to disable IMU access (no I2C transactions)
+#define ORIENTATION_DISABLED false  // Set to true to disable IMU access
 
 #if !ORIENTATION_DISABLED
 #include <Wire.h>
@@ -13,6 +12,7 @@
 Adafruit_LSM6DS33 lsm6ds33;
 Adafruit_LIS3MDL lis3mdl;
 KalmanOrientation kalman;
+bool imuAvailable = false;
 #endif
 
 // Orientation state
@@ -27,14 +27,17 @@ void initOrientation() {
   return;
 #else
   Wire.begin();
-  if (!lsm6ds33.begin_I2C()) {
-    Serial.println("Failed to find LSM6DS33 chip");
-    while (1) { delay(10); }
+
+  bool imuOK = lsm6ds33.begin_I2C();
+  bool magOK = lis3mdl.begin_I2C();
+
+  if (!imuOK || !magOK) {
+    Serial.println("IMU or Magnetometer not detected. Fallback to dummy orientation.");
+    imuAvailable = false;
+    return;
   }
-  if (!lis3mdl.begin_I2C()) {
-    Serial.println("Failed to find LIS3MDL chip");
-    while (1) { delay(10); }
-  }
+
+  imuAvailable = true;
 
   lsm6ds33.setAccelRange(LSM6DS_ACCEL_RANGE_2_G);
   lsm6ds33.setGyroRange(LSM6DS_GYRO_RANGE_250_DPS);
@@ -54,13 +57,24 @@ void getOrientation(float& pitch, float& roll, float& yaw) {
   pitch = roll = yaw = 0.0f;
   return;
 #else
+  if (!imuAvailable) {
+    pitch = roll = yaw = 0.0f;
+    return;
+  }
+
+  static unsigned long lastMicros = micros();
+  unsigned long now = micros();
+  float dt = (now - lastMicros) / 1e6;
+  lastMicros = now;
+
   sensors_event_t accel, gyro, mag;
-  lsm6ds33.getEvent(&accel, &gyro, NULL, NULL);
+  lsm6ds33.getEvent(&accel, &gyro, nullptr);
   lis3mdl.getEvent(&mag);
 
   kalman.update(accel.acceleration.x, accel.acceleration.y, accel.acceleration.z,
                 gyro.gyro.x, gyro.gyro.y, gyro.gyro.z,
-                mag.magnetic.x, mag.magnetic.y, mag.magnetic.z);
+                mag.magnetic.x, mag.magnetic.y, mag.magnetic.z,
+                dt);
 
   pitch = kalman.getPitch();
   roll  = kalman.getRoll();

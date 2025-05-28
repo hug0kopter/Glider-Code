@@ -1,7 +1,7 @@
 #pragma once
 
 #include <ArduinoJson.h>
-
+#include "Pins.h"
 #include <Arduino.h>
 
 void initCAN();                 // Call once in setup

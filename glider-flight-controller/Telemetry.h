@@ -1,7 +1,5 @@
 #pragma once
-
 #include <HardwareSerial.h>
-#include "Pins.h"
 
 extern HardwareSerial RS485;
 
