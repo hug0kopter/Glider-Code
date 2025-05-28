@@ -69,7 +69,7 @@ void orientationTask(void* parameter) {
 // Call this in setup() to initialize sensors and start the filter task
 void initOrientation() {
   delay(1000);
-  Wire.begin(6, 7);          // Replace with your board's SDA, SCL pins
+  Wire.begin(8, 9);          // Replace with your board's SDA, SCL pins
   Wire.setClock(800000);     // Fast I2C for high IMU polling rate
 
   if (!imu.init()) {
