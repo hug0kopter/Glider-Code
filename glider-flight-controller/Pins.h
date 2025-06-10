@@ -11,5 +11,8 @@
 
 #define POT_SIGNAL 20
 
+#define DEPTH_SDA 15  // CHANGE TO CORRECT
+#define DEPTH_SCL 16  // CHANGE TO CORRECT
+
 
 

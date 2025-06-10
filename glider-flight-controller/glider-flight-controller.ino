@@ -3,6 +3,7 @@
 #include <HardwareSerial.h>
 #include "Orientation.h"
 #include "CANHandler.h"
+#include "DepthSensor.h"
 #include "Pins.h"
 
 // Shared RS485 interface used across tasks (defined here, used in .cpp files)

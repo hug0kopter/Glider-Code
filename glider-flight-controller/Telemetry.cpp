@@ -4,6 +4,7 @@
 #include <ArduinoJson.h>
 #include <HardwareSerial.h>
 #include "Pins.h"
+#include "DepthSensor.h"
 
 extern HardwareSerial RS485;
 
@@ -49,7 +50,9 @@ void TelemetryTask(void* param) {
 
     // Sensors
     JsonObject sensors = doc.createNestedObject("sensors");
-    sensors["pressure"] = pressureReading;
+    sensors["pressure"] = getRawPressure();
+    //sensors["depth"] = getDepth();  // Add this line
+    //sensors["temperature"] = getTemperature();  // Optional
     sensors["distanceToBottom"] = sonarDistance;
     //sensors["verticalVelocity"] = verticalVelocity;
     //sensors["horizontalVelocity"] = horizontalVelocity;
